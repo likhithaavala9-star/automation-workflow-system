@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Automation Dashboard</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            background: #0f172a;
+            color: white;
+        }
+        .card {
+            display: inline-block;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background: #1e293b;
+            width: 200px;
+        }
+        h1 {
+            margin-bottom: 30px;
+        }
+        table {
+            margin: auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid white;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🚀 Automation Monitoring Dashboard</h1>
+
+<div class="card">
+    <h2>Total Tasks</h2>
+    <p id="total">0</p>
+</div>
+
+<div class="card">
+    <h2>Successful</h2>
+    <p id="success">0</p>
+</div>
+
+<div class="card">
+    <h2>Failed</h2>
+    <p id="failed">0</p>
+</div>
+
+<div class="card">
+    <h2>Avg Time</h2>
+    <p id="avg">0</p>
+</div>
+
+<h2>📋 Task History</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Task</th>
+            <th>Status</th>
+            <th>Execution Time</th>
+        </tr>
+    </thead>
+    <tbody id="taskTable"></tbody>
+</table>
+
+<script>
+async function loadMetrics() {
+    const res = await fetch("http://127.0.0.1:8000/metrics");
+    const data = await res.json();
+
+    document.getElementById("total").innerText = data.total_tasks_executed;
+    document.getElementById("success").innerText = data.successful_tasks;
+    document.getElementById("failed").innerText = data.failed_tasks;
+    document.getElementById("avg").innerText = data.average_execution_time;
+}
+
+async function loadTasks() {
+    const res = await fetch("http://127.0.0.1:8000/run-workflow");
+    const data = await res.json();
+
+    let table = document.getElementById("taskTable");
+    table.innerHTML = "";
+
+    if (data.results) {
+        data.results.forEach(task => {
+            let row = `<tr>
+                <td>${task.task}</td>
+                <td>${task.status}</td>
+                <td>${task.execution_time}</td>
+            </tr>`;
+            table.innerHTML += row;
+        });
+    }
+}
+
+setInterval(() => {
+    loadMetrics();
+    loadTasks();
+}, 2000);
+
+loadMetrics();
+loadTasks();
+</script>
+
+</body>
+</html>
